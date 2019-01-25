@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/Main.dir/BufferMgr/source/LRU_Cache.cc.o CMakeFiles/Main.dir/BufferMgr/source/MyDB_BufferManager.cc.o CMakeFiles/Main.dir/BufferMgr/source/MyDB_PageHandle.cc.o CMakeFiles/Main.dir/Catalog/source/MyDB_Table.cc.o CMakeFiles/Main.dir/main.cc.o  -o Main 
