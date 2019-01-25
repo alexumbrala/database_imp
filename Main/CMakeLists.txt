@@ -15,8 +15,8 @@ add_executable(Main
         BufferMgr/source/LRU_Cache.cc
         BufferMgr/source/MyDB_BufferManager.cc
         BufferMgr/source/MyDB_PageHandle.cc
-        Catalog/headers/MyDB_Page.h
+        BufferMgr/headers/MyDB_Page.h
         Catalog/headers/MyDB_Table.h
-        Catalog/source/MyDB_Table.cc
+        BufferMgr/source/MyDB_Table.cc
         Qunit/headers/QUnit.h
         main.cc Catalog/headers/util.h)

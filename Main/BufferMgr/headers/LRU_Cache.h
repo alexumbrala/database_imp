@@ -24,27 +24,25 @@ private:
     unordered_map<string, CachePagePtr> cache;
     CachePagePtr head;
     CachePagePtr tail;
-
+    long tempIdx;
     unordered_map<string, CachePagePtr> pinnedCache;
 
     char* buffer;
 
+    void moveToHead(CachePagePtr pCachePage);
     // move the page to cache buffer's tail;
     void moveToTail(CachePagePtr pCachePage);
-    void moveToHead(CachePagePtr pCachePage);
 public:
 
     explicit LRU_Cache(size_t pageSize, size_t pageNum);
-
-    PagePtr getPage(string name);
 
     CachePagePtr getPage(MyDB_TablePtr table, long idx, bool pinned);
 
     void visitPage(CachePagePtr pCachePage);
 
-    void setPage(string name, PagePtr page);
+    void unpin(CachePagePtr pCachePage);
 
-    void freePage(CachePagePtr pCachePage);
+    void makeTempPageAvailable(CachePagePtr pCachePage);
 
     ~LRU_Cache();
 
@@ -60,10 +58,12 @@ public:
     CachePageWeakPtr prev;
     CachePagePtr next;
     size_t handlerCount;
-    CachePage(string name = "", PagePtr page = nullptr, size_t handlerCount = 0):
-                name(std::move(name)),
-                page(std::move(page)),
-                handlerCount(handlerCount)
+    bool pinned;
+    CachePage():
+        name(""),
+        page(nullptr),
+        next(nullptr),
+        handlerCount(0)
     {}
 
     ~CachePage();

@@ -50,15 +50,12 @@ public:
 
 	// FEEL FREE TO ADD ADDITIONAL PUBLIC METHODS
 
-	void freePage(CachePagePtr pCachePage);
-
-	string getTempFileName();
-
 private:
 	// YOUR STUFF HERE
     LRU_Cache *lru;
 	string tempFile;
-
+	MyDB_TablePtr tempTable;
+	long tempIdx;
 
 };
 

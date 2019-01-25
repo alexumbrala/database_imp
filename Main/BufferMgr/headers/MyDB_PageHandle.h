@@ -15,7 +15,7 @@ class MyDB_PageHandleBase {
 
 public:
 
-	MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx);
+	MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx, bool anonymous);
 
 	// THESE METHODS MUST BE IMPLEMENTED WITHOUT CHANGING THE DEFINITION
 
@@ -39,12 +39,18 @@ public:
 
 	// FEEL FREE TO ADD ADDITIONAL PUBLIC METHODS
 
+	void unPin();
+
+
+
+
 private:
     LRU_Cache *lru;
 	string pageName;
 	MyDB_TablePtr pTable;
 	CachePagePtr handlerPage;
 	long idx;
+	bool anonymous;
 	// YOUR CODE HERE
 };
 

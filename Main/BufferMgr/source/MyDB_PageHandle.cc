@@ -5,29 +5,36 @@
 #include <memory>
 #include "MyDB_PageHandle.h"
 
-MyDB_PageHandleBase :: MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx):
+MyDB_PageHandleBase :: MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx, bool anonymous):
 		lru(lru),
 		pageName(assemblePageName(table,idx)),
 		pTable(table),
 		idx(idx),
-		handlerPage(std::move(page)){
+		handlerPage(std::move(page)),
+		anonymous(anonymous){
 	handlerPage->handlerCount++;
 }
 
 void *MyDB_PageHandleBase :: getBytes () {
-	CachePagePtr cachePage = lru->getPage(pTable,idx);
+	CachePagePtr cachePage = lru->getPage(pTable,idx, handlerPage->pinned);
 	//check if the page exists in lru buffer
 	if(cachePage != handlerPage){
 		handlerPage->handlerCount--;
 		handlerPage = cachePage;
 		handlerPage->handlerCount++;
 	}
-	lru->visitPage(handlerPage);
+	if(!handlerPage->pinned){
+		lru->visitPage(handlerPage);
+	}
 	return handlerPage->page->getData();
 }
 
 void MyDB_PageHandleBase :: wroteBytes () {
 	handlerPage->page->setDataDirty();
+}
+
+void MyDB_PageHandleBase ::unPin() {
+	lru->unpin(handlerPage);
 }
 
 MyDB_PageHandleBase :: ~MyDB_PageHandleBase () {
@@ -36,9 +43,13 @@ MyDB_PageHandleBase :: ~MyDB_PageHandleBase () {
 	// if the num of handler to the page is 0, and this page is anonymous
 	// then we free this page's memory
 	handlerPage->handlerCount--;
-	if(false/* anonymous && handlerCount==0 */){
-		lru->freePage(handlerPage);
-        handlerPage->page->resetDirtyFlag();
+	if(handlerPage->handlerCount==0){
+		if(handlerPage->pinned){
+			lru->unpin(handlerPage);
+		}
+		if(anonymous){
+			lru->makeTempPageAvailable(handlerPage);
+		}
 	}
 }
 

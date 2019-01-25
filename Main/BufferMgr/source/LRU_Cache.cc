@@ -4,8 +4,8 @@ using std::make_shared;
 
 void breakFromList(CachePagePtr pCachePage){
     pCachePage->prev.lock()->next = pCachePage->next;
-    pCachePage->next->prev.lock() = pCachePage->prev.lock();
-    pCachePage->prev.lock() = nullptr;
+    pCachePage->next->prev = pCachePage->prev;
+    pCachePage->prev.reset();
     pCachePage->next = nullptr;
 }
 
@@ -15,7 +15,7 @@ CachePage::~CachePage() {
 }
 
 /**
- * LRU_Cache implementation
+ * init LRU_Cache
  */
 LRU_Cache::LRU_Cache(size_t pageSize, size_t pageNum):
     pageSize(pageSize),
@@ -24,9 +24,9 @@ LRU_Cache::LRU_Cache(size_t pageSize, size_t pageNum):
         head->page = make_shared<Page<char>>(pageSize,' ', nullptr);
         head->name = "head";
         CachePagePtr cur = head;
-        for(int i=0; i<pageNum; i++){
+        for(size_t i=0; i<pageNum; i++){
             CachePagePtr pCachePage = make_shared<CachePage>();
-            pCachePage->page = make_shared<Page<char>>(pageSize,' ',buffer+(i*pageNum));
+            pCachePage->page = make_shared<Page<char>>(pageSize,' ',buffer+(i*pageSize));
             pCachePage->prev = cur;
             cur->next = pCachePage;
             cur = pCachePage;
@@ -42,16 +42,6 @@ LRU_Cache::~LRU_Cache(){
     std::cout<<"LRU_Cache destroy"<<std::endl;
 }
 
-PagePtr LRU_Cache::getPage(string name){
-    if(cache.find(name)==cache.end()){
-        return nullptr;
-    }
-    CachePagePtr pCachePage = cache[name];
-    // move the page visited to cache's tail;
-    moveToTail(pCachePage);
-    return pCachePage->page;
-
-}
 
 CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
     string name = assemblePageName(table,idx);
@@ -61,6 +51,7 @@ CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
         CachePagePtr pCachePage = cache[name];
         if (pinned){
             breakFromList(pCachePage);
+            pCachePage->pinned = true;
             cache.erase(name);
             pinnedCache[name]=pCachePage;
         }
@@ -91,13 +82,21 @@ CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
     // we insert a new page to the tail
     PagePtr page = make_shared<Page<char>>(pageSize,' ', leastPage->page->getData());
     page->readFromTable(table,idx);
-    CachePagePtr pCachePage = make_shared<CachePage>(name,page,0);
+    CachePagePtr pCachePage = make_shared<CachePage>();
+    pCachePage->name = name;
+    pCachePage->page = page;
     pCachePage->prev = tail->prev;
     pCachePage->next = tail;
     tail->prev.lock()->next = pCachePage;
     tail->prev = pCachePage;
     // store the page into hash map
-    cache[name] = pCachePage;
+    if(pinned){
+        breakFromList(pCachePage);
+        pCachePage->pinned = true;
+        pinnedCache[name] = pCachePage;
+    } else{
+        cache[name] = pCachePage;
+    }
     return pCachePage;
 
 }
@@ -105,27 +104,14 @@ CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
 
 void LRU_Cache::visitPage(CachePagePtr pCachePage) {
     // move the page visited to cache's tail;
-    moveToTail(pCachePage);
-}
-
-void LRU_Cache::setPage(string name, PagePtr page){
-    if(cache.find(name)==cache.end()){
-        CachePagePtr pCachePage = head->next;
-        cache.erase(pCachePage->name);
-        pCachePage->name = name;
-        moveToTail(pCachePage);
-        pCachePage->page = page;
-        cache[name]=pCachePage;
-    }else{
-        CachePagePtr pCachePage = cache[name];
-        pCachePage->page = page;
-        moveToTail(pCachePage);
-    }
+    moveToTail(std::move(pCachePage));
 }
 
 void LRU_Cache::moveToTail(CachePagePtr pCachePage){
 
-    breakFromList(pCachePage);
+    if(!pCachePage->pinned){
+        breakFromList(pCachePage);
+    }
 
     pCachePage->prev = tail->prev;
     pCachePage->next = tail;
@@ -136,7 +122,9 @@ void LRU_Cache::moveToTail(CachePagePtr pCachePage){
 
 void LRU_Cache::moveToHead(CachePagePtr pCachePage) {
 
-    breakFromList(pCachePage);
+    if(!pCachePage->pinned){
+        breakFromList(pCachePage);
+    }
 
     pCachePage->prev = head;
     pCachePage->next = head->next;
@@ -145,10 +133,21 @@ void LRU_Cache::moveToHead(CachePagePtr pCachePage) {
     head->next = pCachePage;
 }
 
+void LRU_Cache::makeTempPageAvailable(CachePagePtr pCachePage) {
+    // if current temp page is still in the buffer pool, we move it to the head side of the link list
+    // This action enable the lru to evict the temp page when a new page is looking for slot.
+    if(cache.find(pCachePage->name)!=cache.end()){
+        moveToHead(pCachePage);
+    }
+}
 
 
-void LRU_Cache::freePage(CachePagePtr pCachePage) {
-    moveToHead(pCachePage);
+
+void LRU_Cache::unpin(CachePagePtr pCachePage) {
+    moveToTail(pCachePage);
+    pCachePage->pinned = false;
+    pinnedCache.erase(pCachePage->name);
+    cache[pCachePage->name] = pCachePage;
 }
 
 /**
