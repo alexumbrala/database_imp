@@ -25,6 +25,10 @@ private:
     CachePagePtr head;
     CachePagePtr tail;
 
+    unordered_map<string, CachePagePtr> pinnedCache;
+
+    char* buffer;
+
     // move the page to cache buffer's tail;
     void moveToTail(CachePagePtr pCachePage);
     void moveToHead(CachePagePtr pCachePage);
@@ -34,7 +38,7 @@ public:
 
     PagePtr getPage(string name);
 
-    CachePagePtr getPage(MyDB_TablePtr table, long idx);
+    CachePagePtr getPage(MyDB_TablePtr table, long idx, bool pinned);
 
     void visitPage(CachePagePtr pCachePage);
 

@@ -16,13 +16,14 @@ class Page;
 
 typedef shared_ptr<Page<char>> PagePtr;
 
+
 template<typename T>
 class Page{
 
 private:
     
     // number of data
-    size_t size;
+    const size_t size;
 
     // content of this page
     T* data;
@@ -40,15 +41,15 @@ public:
     /**
      *  constructor
      */
-    Page(size_t pageSize, T deft): size(pageSize),defaultValue(deft){
-        dirty = false;
-        data = (T*)malloc(sizeof(T)*pageSize);
-    }
-    
+    Page(const size_t pageSize, T deft,T *data):
+        size(pageSize),
+        defaultValue(deft),
+        data(data)
+    {}
+
     ~Page(){
         std::cout<<"destroy page"<<std::endl;
         writeToFile();
-        free(data);
     }
 
     T* getData(){
@@ -70,7 +71,7 @@ public:
         lseek(fd,idx*size,SEEK_SET);
         ssize_t readLen = read(fd,data,size);
         if(readLen<0)
-            std::cerr<<"cannot read content from table"<<endl;
+            std::cerr<<"cannot read content from table:"<<table->getName()<<" page:"<<idx<<endl;
         close(fd);
     }
 
@@ -81,21 +82,19 @@ public:
         int fd;
         string tableFile = table->getStorageLoc()+"_"+table->getName();
         if ((fd=open(tableFile.data(),O_FSYNC|O_RDWR))==-1){
-            std::cerr<<"fail to open table for writing"<<endl;
+            std::cerr<<"fail to open table for writing:"<<table->getName()<<" page:"<<idx<<endl;
             return;
         }
         lseek(fd,idx*size,SEEK_SET);
         ssize_t writeLen = write(fd,data,size);
         if(writeLen<=0)
-            std::cerr<<"cannot read content from table"<<endl;
+            std::cerr<<"cannot read content from table:"<<table->getName()<<" page:"<<idx<<endl;
         close(fd);
     }
 
     void resetDirtyFlag(){
         dirty = false;
     }
-
-
 
 };
 

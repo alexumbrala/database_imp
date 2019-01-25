@@ -22,8 +22,10 @@ MyDB_PageHandle MyDB_BufferManager :: getPage () {
 	return nullptr;		
 }
 
-MyDB_PageHandle MyDB_BufferManager :: getPinnedPage (MyDB_TablePtr, long) {
-	return nullptr;		
+MyDB_PageHandle MyDB_BufferManager :: getPinnedPage (MyDB_TablePtr table, long idx) {
+	CachePagePtr page = lru->getPinnedPage(table,idx);
+	MyDB_PageHandle handler = make_shared<MyDB_PageHandleBase>(lru,page,table,idx);
+	return handler;
 }
 
 MyDB_PageHandle MyDB_BufferManager :: getPinnedPage () {

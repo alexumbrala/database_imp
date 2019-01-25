@@ -6,7 +6,6 @@
 #include "LRU_Cache.h"
 #include "util.h"
 
-
 // page handles are basically smart pointers
 using namespace std;
 class MyDB_PageHandleBase;
@@ -16,15 +15,7 @@ class MyDB_PageHandleBase {
 
 public:
 
-	MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx):
-	lru(lru),
-	pageName(assemblePageName(table,idx)),
-	pTable(table),
-	idx(idx),
-	handlerPage(page)
-	{
-		init();
-	}
+	MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx);
 
 	// THESE METHODS MUST BE IMPLEMENTED WITHOUT CHANGING THE DEFINITION
 
@@ -54,7 +45,6 @@ private:
 	MyDB_TablePtr pTable;
 	CachePagePtr handlerPage;
 	long idx;
-	void init();
 	// YOUR CODE HERE
 };
 

@@ -51,29 +51,33 @@ void test_IO(){
 
 
 void test_MyDB_page(){
-    size_t pageSize =1;
+    size_t pageSize = 1;
     size_t pageNum = 4;
     MyDB_BufferManager manager(pageSize,pageNum,"file");
     MyDB_TablePtr table1 = make_shared<MyDB_Table>("table1","home");
     MyDB_TablePtr table2 = make_shared<MyDB_Table>("table2","home");
 
-    MyDB_PageHandle handler1 = manager.getPage(table1,1);
+    MyDB_PageHandle handler1 = manager.getPage(table1,0);
     char* data1 = (char*)handler1->getBytes();
-    *data1 = 'a';
+    *data1 = '1';
     handler1->wroteBytes();
+    MyDB_PageHandle newHandle = handler1;
 
     MyDB_PageHandle handler2 = manager.getPage(table1,2);
     char* data2 = (char*)handler2->getBytes();
-    *data2 = 'b';
+    *data2 = '2';
     handler2->wroteBytes();
 
     MyDB_PageHandle tempHandler = manager.getPage(table2,1);
     char* data3 = (char*)tempHandler->getBytes();
-    *data3 = 'b';
+    *data3 = 'a';
     tempHandler->wroteBytes();
     tempHandler = manager.getPage(table1,2);
     tempHandler = manager.getPage(table2,2);
     tempHandler = manager.getPage(table2,3);
-//    handler1->getBytes();
-    handler2->getBytes();
+    char* byte =  (char*)handler1->getBytes();
+    cout<<"table1 p1 ->"<< *byte <<endl;
+    *byte = '2';
+    handler1->wroteBytes();
+
 }

@@ -5,7 +5,12 @@
 #include <memory>
 #include "MyDB_PageHandle.h"
 
-void MyDB_PageHandleBase :: init(){
+MyDB_PageHandleBase :: MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx):
+		lru(lru),
+		pageName(assemblePageName(table,idx)),
+		pTable(table),
+		idx(idx),
+		handlerPage(std::move(page)){
 	handlerPage->handlerCount++;
 }
 
