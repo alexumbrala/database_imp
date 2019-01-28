@@ -43,11 +43,11 @@ public:
 
 private:
     LRU_Cache *lru;
-	string pageName;
-	MyDB_TablePtr pTable;
 	CachePagePtr handlerPage;
+	MyDB_TablePtr pTable;
 	long idx;
 	bool anonymous;
+	string pageName;
 	// YOUR CODE HERE
 };
 

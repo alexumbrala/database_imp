@@ -22,13 +22,13 @@ private:
     // number of data
     const size_t size;
 
+    T defaultValue;
+
     // content of this page
     T* data;
 
     // if data changed
     bool dirty;
-
-    T defaultValue;
 
     MyDB_TablePtr table;
 
@@ -39,7 +39,8 @@ public:
     Page(const size_t pageSize, T deft,T *data):
         size(pageSize),
         defaultValue(deft),
-        data(data)
+        data(data),
+        dirty(false)
         {}
 
     ~Page(){

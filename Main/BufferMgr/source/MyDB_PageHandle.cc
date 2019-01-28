@@ -7,11 +7,11 @@
 
 MyDB_PageHandleBase :: MyDB_PageHandleBase(LRU_Cache *lru, CachePagePtr page, MyDB_TablePtr table, long idx, bool anonymous):
 		lru(lru),
-		pageName(assemblePageName(table,idx)),
-		pTable(table),
-		idx(idx),
-		handlerPage(std::move(page)),
-		anonymous(anonymous){
+        handlerPage(std::move(page)),
+        pTable(table),
+        idx(idx),
+        anonymous(anonymous),
+        pageName(assemblePageName(table,idx)){
 	handlerPage->handlerCount++;
 }
 
