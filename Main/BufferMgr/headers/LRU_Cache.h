@@ -24,9 +24,7 @@ private:
     unordered_map<string, CachePagePtr> cache;
     CachePagePtr head;
     CachePagePtr tail;
-    long tempIdx;
     unordered_map<string, CachePagePtr> pinnedCache;
-
     char* buffer;
 
     void moveToHead(CachePagePtr pCachePage);

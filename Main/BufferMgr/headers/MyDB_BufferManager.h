@@ -56,9 +56,6 @@ private:
 	string tempFile;
 	MyDB_TablePtr tempTable;
 	long tempIdx;
-
 };
 
 #endif
-
-

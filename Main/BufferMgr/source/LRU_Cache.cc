@@ -9,7 +9,6 @@ void breakFromList(CachePagePtr pCachePage){
     pCachePage->next = nullptr;
 }
 
-
 CachePage::~CachePage() {
     cout<<"destroy cachePage : "<<name<<endl;
 }
@@ -66,7 +65,7 @@ CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
     if (head->next == tail){
         // if there is no more slot for new page, we throw an error
         /**
-         * todo: maybe we should throw an error since there is no more room for new page
+         * todo: maybe we should throw an error since there is no more slot for new page
          */
         std::cerr<<"Buffer pool of page is full, there is no room for new page"<<endl;
         return nullptr;
@@ -100,7 +99,6 @@ CachePagePtr LRU_Cache::getPage(MyDB_TablePtr table, long idx, bool pinned){
     return pCachePage;
 
 }
-
 
 void LRU_Cache::visitPage(CachePagePtr pCachePage) {
     // move the page visited to cache's tail;
@@ -140,8 +138,6 @@ void LRU_Cache::makeTempPageAvailable(CachePagePtr pCachePage) {
         moveToHead(pCachePage);
     }
 }
-
-
 
 void LRU_Cache::unpin(CachePagePtr pCachePage) {
     moveToTail(pCachePage);

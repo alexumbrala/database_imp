@@ -41,9 +41,6 @@ public:
 
 	void unPin();
 
-
-
-
 private:
     LRU_Cache *lru;
 	string pageName;

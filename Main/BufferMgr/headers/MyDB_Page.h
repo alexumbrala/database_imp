@@ -7,15 +7,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-
-
 using std::string;
 
 template<typename T>
 class Page;
 
 typedef shared_ptr<Page<char>> PagePtr;
-
 
 template<typename T>
 class Page{
@@ -38,14 +35,12 @@ private:
     long idx;
 
 public:
-    /**
-     *  constructor
-     */
+
     Page(const size_t pageSize, T deft,T *data):
         size(pageSize),
         defaultValue(deft),
         data(data)
-    {}
+        {}
 
     ~Page(){
         std::cout<<"destroy page"<<std::endl;
@@ -75,7 +70,6 @@ public:
         close(fd);
     }
 
-
     void writeToFile(){
         if(!dirty) return;
         dirty = false;
@@ -91,11 +85,6 @@ public:
             std::cerr<<"cannot read content from table:"<<table->getName()<<" page:"<<idx<<endl;
         close(fd);
     }
-
-    void resetDirtyFlag(){
-        dirty = false;
-    }
-
 };
 
 #endif
